@@ -1,0 +1,951 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f3f6f1">
+  <title>Logic Lab | Boolean Workbench</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      color-scheme: light;
+      --paper: #f3f6f1;
+      --surface: #ffffff;
+      --ink: #172722;
+      --muted: #64736d;
+      --line: #d7dfd9;
+      --green: #157466;
+      --green-dark: #0c584e;
+      --mint: #dff1e9;
+      --orange: #e97150;
+      --yellow: #f1c84b;
+      --blue: #547eaa;
+      --mono: "IBM Plex Mono", monospace;
+      --sans: "DM Sans", sans-serif;
+      --display: "Space Grotesk", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background-color: var(--paper);
+      background-image: radial-gradient(#cbd6cf 0.65px, transparent 0.65px);
+      background-size: 17px 17px;
+      color: var(--ink);
+      font: 14px/1.5 var(--sans);
+    }
+    button, input, select, textarea { font: inherit; }
+    button { color: inherit; }
+    .topbar {
+      min-height: 64px;
+      background: var(--ink);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 34px;
+    }
+    .brand { display: flex; align-items: center; gap: 11px; font: 600 14px var(--display); }
+    .brand-mark { width: 25px; height: 25px; border: 1px solid #78c6a9; position: relative; }
+    .brand-mark::before, .brand-mark::after { content: ""; position: absolute; background: #78c6a9; }
+    .brand-mark::before { width: 13px; height: 3px; top: 6px; left: 5px; }
+    .brand-mark::after { width: 3px; height: 13px; left: 10px; top: 5px; }
+    .topbar-meta { color: #b6c6bf; font: 11px var(--mono); letter-spacing: 0; }
+    main { max-width: 1540px; margin: 0 auto; padding: 28px 34px 60px; }
+    .page-heading { display: flex; justify-content: space-between; align-items: end; gap: 24px; margin-bottom: 24px; }
+    .eyebrow { color: var(--green); font: 600 10px var(--mono); text-transform: uppercase; letter-spacing: 1.3px; }
+    h1 { margin: 3px 0 0; font: 600 30px/1.12 var(--display); letter-spacing: 0; }
+    .page-heading p { max-width: 480px; color: var(--muted); margin: 0; font-size: 13px; }
+    .workspace { display: grid; grid-template-columns: minmax(300px, 360px) minmax(0, 1fr); gap: 24px; align-items: start; }
+    .panel { background: var(--surface); border: 1px solid var(--line); }
+    .controls { padding: 22px; }
+    .section-heading { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 15px; }
+    .section-heading h2, .section-heading h3 { margin: 0; font: 600 15px var(--display); }
+    .step-tag { color: var(--green); font: 11px var(--mono); }
+    label { display: block; color: #46564f; font-size: 12px; font-weight: 600; margin-bottom: 7px; }
+    textarea, input[type="text"], input[type="url"], input[type="password"], select {
+      width: 100%; color: var(--ink); background: #fbfcfa; border: 1px solid #cbd5ce; border-radius: 3px; padding: 10px 11px; outline: none;
+    }
+    textarea:focus, input:focus, select:focus { border-color: var(--green); box-shadow: 0 0 0 2px #1574661a; }
+    textarea { min-height: 100px; resize: vertical; font: 13px/1.65 var(--mono); }
+    .field-note { color: var(--muted); font-size: 11px; margin: 6px 0 0; }
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
+    .field-row > div { min-width: 0; }
+    .field-row select, .field-row input { height: 39px; }
+    .primary-button, .secondary-button, .quiet-button {
+      border: 0; border-radius: 3px; min-height: 41px; padding: 0 14px; cursor: pointer; font-weight: 700; transition: background .16s ease, transform .16s ease;
+    }
+    .primary-button { background: var(--green); color: white; width: 100%; margin-top: 18px; }
+    .primary-button:hover { background: var(--green-dark); }
+    .primary-button:active, .secondary-button:active { transform: translateY(1px); }
+    .secondary-button { background: var(--ink); color: white; }
+    .secondary-button:hover { background: #29453c; }
+    .quiet-button { min-height: 32px; padding: 0 9px; background: transparent; color: var(--green); border: 1px solid #bdd3c8; font-size: 11px; }
+    .quiet-button:hover { background: var(--mint); }
+    .error-message { color: #a63e2b; background: #fff0eb; padding: 9px 10px; margin-top: 12px; border-left: 3px solid var(--orange); font-size: 12px; }
+    [hidden] { display: none !important; }
+    .syntax { margin: 18px 0 0; border-top: 1px solid var(--line); padding-top: 14px; }
+    .syntax summary, .ai-config summary { cursor: pointer; color: #46564f; font-size: 11px; font-weight: 700; list-style-position: outside; }
+    .syntax p { color: var(--muted); font-size: 11px; margin: 9px 0 0; }
+    code, .mono { font-family: var(--mono); }
+    .ai-config { margin-top: 14px; border-top: 1px solid var(--line); padding-top: 14px; }
+    .ai-config .field { margin-top: 12px; }
+    .ai-config input { height: 37px; font-size: 11px; }
+    .privacy-note { color: var(--muted); font-size: 10px; line-height: 1.5; margin: 11px 0 0; }
+    .ai-review { margin-top: 12px; width: 100%; }
+    .ai-result { margin-top: 13px; padding: 12px; background: #f1f5f3; border-left: 3px solid var(--blue); font-size: 12px; overflow-wrap: anywhere; }
+    .ai-result h4 { margin: 0 0 7px; font: 600 12px var(--display); }
+    .ai-result p { margin: 6px 0; color: #46564f; }
+    .ai-proposal { margin: 8px 0; font: 11px/1.6 var(--mono); }
+    .right-column { min-width: 0; display: flex; flex-direction: column; gap: 18px; }
+    .results { padding: 19px 21px 17px; }
+    .results-top { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+    .results-top h2 { margin: 0; font: 600 15px var(--display); }
+    .segmented { display: inline-flex; gap: 3px; background: #edf1ed; padding: 3px; border-radius: 4px; }
+    .segmented button { cursor: pointer; border: 0; color: #53625c; background: transparent; padding: 6px 10px; border-radius: 3px; font: 600 11px var(--mono); }
+    .segmented button[aria-pressed="true"] { color: white; background: var(--green); }
+    .form-results { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
+    .form-output { min-width: 0; border-top: 2px solid var(--green); padding: 10px 10px 8px; background: #f7faf7; }
+    .form-output.pos { border-color: var(--orange); }
+    .form-label { display: flex; justify-content: space-between; align-items: center; gap: 8px; color: var(--muted); font: 10px var(--mono); text-transform: uppercase; }
+    .form-expression { margin: 8px 0 7px; color: var(--ink); overflow-wrap: anywhere; font: 500 15px/1.55 var(--mono); }
+    .form-stats { color: var(--muted); font-size: 10px; }
+    .delta { color: var(--green); font: 600 10px var(--mono); }
+    .section-panel { background: var(--surface); border: 1px solid var(--line); padding: 18px 20px; }
+    .algebraic-panel > summary { display: flex; justify-content: space-between; align-items: center; gap: 12px; cursor: pointer; list-style: none; }
+    .algebraic-panel > summary::-webkit-details-marker { display: none; }
+    .algebraic-panel > summary::after { content: "+"; color: var(--green); font: 16px var(--mono); }
+    .algebraic-panel[open] > summary::after { content: "-"; }
+    .algebraic-panel > summary h3 { margin: 0; font: 600 15px var(--display); }
+    .algebraic-panel > summary .algebraic-title { display: flex; align-items: center; gap: 10px; }
+    .algebraic-panel[open] > summary { margin-bottom: 12px; }
+    .algebraic-identity { color: var(--muted); font-size: 11px; margin: 0 0 12px; }
+    .algebraic-group { padding: 10px 0; border-top: 1px solid #e7ece8; }
+    .algebraic-group h4 { margin: 0 0 6px; font: 500 11px var(--mono); color: var(--green-dark); }
+    .algebraic-group ol { margin: 0; padding-left: 23px; color: #43544b; font: 11px/1.7 var(--mono); overflow-wrap: anywhere; }
+    .algebraic-group li { padding-left: 3px; }
+    .algebraic-empty { color: var(--muted); font-size: 11px; }
+    .section-panel .section-heading { margin-bottom: 12px; }
+    .section-caption { color: var(--muted); font-size: 11px; margin: -4px 0 13px; }
+    .maps-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(205px, 1fr)); gap: 12px; }
+    .map-card { border: 1px solid var(--line); padding: 10px; min-width: 0; }
+    .map-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font: 10px var(--mono); color: var(--muted); }
+    .map-title strong { color: var(--ink); font-weight: 500; }
+    .kmap { width: 100%; border-collapse: separate; border-spacing: 3px; table-layout: fixed; font: 10px var(--mono); text-align: center; }
+    .kmap th { color: var(--muted); font-weight: 400; }
+    .kmap .axis-label { width: 23px; }
+    .map-cell { height: 28px; background: #edf2ee; color: #31453c; border-radius: 2px; position: relative; }
+    .map-cell.one { background: #d8eee4; color: #125b4d; }
+    .map-cell.zero { background: #f8e4dc; color: #884433; }
+    .map-cell.dc { background: #f7ebbb; color: #6b5815; }
+    .map-cell.grouped { outline: 2px solid var(--group-color, #157466); outline-offset: -2px; font-weight: 700; }
+    .map-legend { display: flex; gap: 12px; margin-top: 7px; color: var(--muted); font-size: 10px; }
+    .legend-swatch { display: inline-block; width: 8px; height: 8px; margin-right: 4px; border-radius: 1px; vertical-align: 0; }
+    .sim-layout { display: grid; grid-template-columns: minmax(180px, 235px) minmax(0, 1fr); gap: 18px; align-items: center; }
+    .sim-output { background: var(--ink); color: white; padding: 13px; display: flex; justify-content: space-between; align-items: center; margin-top: 12px; }
+    .sim-output span { color: #c3d1ca; font: 10px var(--mono); }
+    .sim-output strong { color: #a0e2bc; font: 600 18px var(--mono); }
+    .switch-list { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+    .switch-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; background: #f3f6f3; padding: 6px 8px; border: 1px solid #e1e7e2; }
+    .switch-row label { margin: 0; font: 11px var(--mono); }
+    .switch { width: 36px; height: 21px; padding: 2px; border: 0; border-radius: 12px; background: #9aa8a0; cursor: pointer; transition: background .15s ease; }
+    .switch::after { content: ""; display: block; width: 17px; height: 17px; border-radius: 50%; background: white; transition: transform .15s ease; }
+    .switch[aria-pressed="true"] { background: var(--green); }
+    .switch[aria-pressed="true"]::after { transform: translateX(15px); }
+    .switch:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
+    .circuit-wrap { min-width: 0; overflow-x: auto; border: 1px solid #e2e8e3; background: #fbfcfb; }
+    .circuit-svg { display: block; width: 100%; min-width: 550px; height: auto; }
+    .circuit-svg text { font-family: var(--mono); }
+    .circuit-svg .wire { stroke: #8d9d94; stroke-width: 1.5; fill: none; }
+    .circuit-svg .input-dot { fill: var(--green); }
+    .circuit-svg .gate { fill: #e6f3ec; stroke: var(--green); stroke-width: 1.5; }
+    .circuit-svg .final-gate { fill: #ffede6; stroke: var(--orange); stroke-width: 1.5; }
+    .circuit-svg .gate-title { fill: var(--green-dark); font-size: 10px; font-weight: 600; }
+    .circuit-svg .gate-expression { fill: #40544a; font-size: 10px; }
+    .circuit-svg .pin-label { fill: var(--muted); font-size: 10px; }
+    .circuit-svg .out-label { fill: var(--ink); font-size: 11px; font-weight: 600; }
+    .truth-table-wrap { max-height: 275px; overflow: auto; border: 1px solid var(--line); }
+    .truth-table { width: 100%; border-collapse: collapse; font: 11px var(--mono); text-align: center; }
+    .truth-table th { position: sticky; top: 0; z-index: 1; background: #eaf0eb; color: #42534a; font-weight: 500; }
+    .truth-table th, .truth-table td { padding: 5px 8px; border-bottom: 1px solid #e7ece8; }
+    .truth-table tbody tr:nth-child(even) { background: #f8faf8; }
+    .truth-table .match { color: var(--green-dark); font-weight: 600; }
+    .truth-table .different { color: #b5402d; font-weight: 700; }
+    .empty-state { color: var(--muted); padding: 24px 12px; text-align: center; font-size: 12px; }
+    .footnote { color: var(--muted); font-size: 10px; margin: 10px 0 0; }
+    @media (max-width: 960px) {
+      main { padding: 24px 20px 44px; }
+      .workspace { grid-template-columns: minmax(270px, 320px) minmax(0, 1fr); gap: 15px; }
+      .controls { padding: 17px; }
+      .section-panel { padding: 15px; }
+      .sim-layout { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 700px) {
+      .topbar { padding: 0 17px; }
+      .topbar-meta { font-size: 9px; }
+      main { padding: 20px 13px 36px; }
+      .page-heading { align-items: start; flex-direction: column; gap: 8px; margin-bottom: 17px; }
+      h1 { font-size: 26px; }
+      .workspace { grid-template-columns: 1fr; }
+      .controls { padding: 17px; }
+      .right-column { gap: 12px; }
+      .results { padding: 15px; }
+      .results-top { align-items: flex-start; flex-direction: column; }
+      .form-results { grid-template-columns: 1fr; }
+      .form-expression { font-size: 13px; }
+      .section-panel { padding: 14px; }
+      .maps-grid { grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
+    }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; } }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark" aria-hidden="true"></span><span>LOGIC LAB</span></div>
+    <div class="topbar-meta">BOOLEAN WORKBENCH <span aria-hidden="true">/</span> 4-6 INPUTS</div>
+  </header>
+  <main>
+    <div class="page-heading">
+      <div><div class="eyebrow">Digital design studio</div><h1>Boolean workbench</h1></div>
+      <p>Reduce an expression, inspect its map, then flip the inputs and watch the simplified circuit respond.</p>
+    </div>
+    <div class="workspace">
+      <aside class="panel controls" aria-label="Expression controls">
+        <div class="section-heading"><h2>1. Define the function</h2><span class="step-tag">INPUT</span></div>
+        <label for="expression">Boolean expression</label>
+        <textarea id="expression" spellcheck="false" aria-describedby="syntax-note">A'B + AC'D</textarea>
+        <p class="field-note" id="syntax-note">Example: <code>A'B + AC'D</code></p>
+        <div class="field-row">
+          <div><label for="variable-count">Variables</label><select id="variable-count"><option value="4">4 variables</option><option value="5">5 variables</option><option value="6">6 variables</option></select></div>
+          <div><label for="dont-cares">Don't-care minterms</label><input id="dont-cares" type="text" placeholder="e.g. 2, 7" autocomplete="off"></div>
+        </div>
+        <p class="field-note">Minterms are indexed from 0, with A as the most significant bit.</p>
+        <button id="simplify" class="primary-button" type="button">Simplify expression</button>
+        <div id="error-message" class="error-message" role="alert" hidden></div>
+        <details class="syntax">
+          <summary>Supported notation</summary>
+          <p>Variables A-F; NOT with <code>'</code>, <code>!</code> or <code>~</code>; AND with <code>&amp;</code>, <code>*</code>, <code>.</code> or adjacency; OR with <code>+</code> or <code>|</code>; XOR with <code>^</code>; parentheses and constants <code>0</code>/<code>1</code>. Optional assignment prefixes such as <code>F =</code> are accepted.</p>
+        </details>
+        <details class="ai-config">
+          <summary>GenAI review settings</summary>
+          <div class="field"><label for="ai-endpoint">OpenAI-compatible chat endpoint</label><input id="ai-endpoint" type="url" value="https://api.openai.com/v1/chat/completions" autocomplete="url"></div>
+          <div class="field"><label for="ai-model">Model</label><input id="ai-model" type="text" value="gpt-4o-mini" autocomplete="off"></div>
+          <div class="field"><label for="ai-key">API key</label><input id="ai-key" type="password" placeholder="Enter a key for this session" autocomplete="off"></div>
+          <p class="privacy-note">The local minimizer works without AI. A key is used only when you request a review and is not saved by this page; the request goes directly to the endpoint above.</p>
+          <button id="ai-review" class="secondary-button ai-review" type="button">Ask GenAI to review</button>
+          <div id="ai-result" class="ai-result" aria-live="polite" hidden></div>
+        </details>
+      </aside>
+
+      <div class="right-column">
+        <section class="panel results" aria-labelledby="results-heading">
+          <div class="results-top">
+            <h2 id="results-heading">2. Minimized forms</h2>
+            <div class="segmented" role="group" aria-label="Select circuit form">
+              <button type="button" data-form="sop" aria-pressed="true">SOP</button>
+              <button type="button" data-form="pos" aria-pressed="false">POS</button>
+            </div>
+          </div>
+          <div class="form-results" id="form-results"></div>
+        </section>
+
+        <details class="section-panel algebraic-panel">
+          <summary><span class="algebraic-title"><h3>Algebraic reduction</h3><span class="step-tag">PAIRWISE MERGES</span></span></summary>
+          <p class="algebraic-identity" id="algebraic-identity"></p>
+          <div id="algebraic-steps"></div>
+        </details>
+
+        <section class="section-panel" aria-labelledby="map-heading">
+          <div class="section-heading"><h3 id="map-heading">Karnaugh maps</h3><span class="step-tag" id="map-form-label">SOP GROUPS</span></div>
+          <p class="section-caption">Gray-code cell order; outlined cells belong to the selected minimized cover.</p>
+          <div id="maps-grid" class="maps-grid"></div>
+          <div class="map-legend"><span><i class="legend-swatch" style="background:#d8eee4"></i>1</span><span><i class="legend-swatch" style="background:#f8e4dc"></i>0</span><span><i class="legend-swatch" style="background:#f7ebbb"></i>X</span></div>
+        </section>
+
+        <section class="section-panel" aria-labelledby="sim-heading">
+          <div class="section-heading"><h3 id="sim-heading">3. Circuit simulator</h3><span class="step-tag">LIVE INPUTS</span></div>
+          <p class="section-caption">The gate network evaluates the selected minimized form; output is checked against the original expression.</p>
+          <div class="sim-layout">
+            <div><div id="switch-list" class="switch-list"></div><div class="sim-output"><span>SIMULATED OUTPUT</span><strong id="sim-output">0</strong></div></div>
+            <div id="circuit-wrap" class="circuit-wrap" role="img" aria-label="Simplified logic circuit"></div>
+          </div>
+          <p class="footnote" id="sim-status" aria-live="polite"></p>
+        </section>
+
+        <section class="section-panel" aria-labelledby="table-heading">
+          <div class="section-heading"><h3 id="table-heading">Truth table</h3><span class="step-tag" id="table-count"></span></div>
+          <div id="truth-table-wrap" class="truth-table-wrap"></div>
+          <p class="footnote">The simplified output column is computed from the selected gate network.</p>
+        </section>
+      </div>
+    </div>
+  </main>
+  <script>
+    "use strict";
+
+    const VARIABLE_NAMES = ["A", "B", "C", "D", "E", "F"];
+    const GRAY_CODES = [0, 1, 3, 2];
+
+    class ExpressionParser {
+      constructor(source) {
+        this.tokens = [];
+        const expression = source.includes("=") ? source.slice(source.indexOf("=") + 1) : source;
+        for (const char of expression) {
+          if (/\s/.test(char)) continue;
+          const upper = char.toUpperCase();
+          if (/^[A-F]$/.test(upper)) this.tokens.push({ type: "variable", value: upper });
+          else if (char === "0" || char === "1") this.tokens.push({ type: "constant", value: char === "1" });
+          else if (["+", "|", "*", "&", ".", "^", "!", "~", "'", "(", ")"].includes(char)) this.tokens.push({ type: char, value: char });
+          else throw new Error(`Unsupported character: ${char}`);
+        }
+        this.position = 0;
+      }
+      peek() { return this.tokens[this.position]; }
+      take(type) {
+        const token = this.peek();
+        if (!token || token.type !== type) throw new Error(`Expected ${type === ")" ? "a closing parenthesis" : `\`${type}\``}`);
+        this.position += 1;
+        return token;
+      }
+      parse() {
+        if (this.tokens.length === 0) throw new Error("Enter a Boolean expression.");
+        const ast = this.parseOr();
+        if (this.peek()) throw new Error(`Unexpected token \`${this.peek().value}\`.`);
+        return ast;
+      }
+      parseOr() {
+        let node = this.parseXor();
+        while (this.peek() && ["+", "|"].includes(this.peek().type)) {
+          this.position += 1;
+          node = { type: "or", left: node, right: this.parseXor() };
+        }
+        return node;
+      }
+      parseXor() {
+        let node = this.parseAnd();
+        while (this.peek() && this.peek().type === "^") {
+          this.position += 1;
+          node = { type: "xor", left: node, right: this.parseAnd() };
+        }
+        return node;
+      }
+      parseAnd() {
+        let node = this.parseUnary();
+        while (this.peek()) {
+          if (["*", "&", "."].includes(this.peek().type)) {
+            this.position += 1;
+            node = { type: "and", left: node, right: this.parseUnary() };
+          } else if (["variable", "constant", "(", "!", "~"].includes(this.peek().type)) {
+            node = { type: "and", left: node, right: this.parseUnary() };
+          } else break;
+        }
+        return node;
+      }
+      parseUnary() {
+        if (this.peek() && ["!", "~"].includes(this.peek().type)) {
+          this.position += 1;
+          return { type: "not", child: this.parseUnary() };
+        }
+        let node = this.parsePrimary();
+        while (this.peek() && this.peek().type === "'") {
+          this.position += 1;
+          node = { type: "not", child: node };
+        }
+        return node;
+      }
+      parsePrimary() {
+        const token = this.peek();
+        if (!token) throw new Error("Expression ends unexpectedly.");
+        if (token.type === "variable") {
+          this.position += 1;
+          return { type: "variable", name: token.value };
+        }
+        if (token.type === "constant") {
+          this.position += 1;
+          return { type: "constant", value: token.value };
+        }
+        if (token.type === "(") {
+          this.position += 1;
+          const node = this.parseOr();
+          this.take(")");
+          return node;
+        }
+        throw new Error(`Unexpected token \`${token.value}\`.`);
+      }
+    }
+
+    function expressionVariables(node, variables = new Set()) {
+      if (node.type === "variable") variables.add(node.name);
+      if (node.left) expressionVariables(node.left, variables);
+      if (node.right) expressionVariables(node.right, variables);
+      if (node.child) expressionVariables(node.child, variables);
+      return variables;
+    }
+
+    function evaluateExpression(node, assignment) {
+      switch (node.type) {
+        case "constant": return node.value;
+        case "variable": return Boolean(assignment[node.name]);
+        case "not": return !evaluateExpression(node.child, assignment);
+        case "and": return evaluateExpression(node.left, assignment) && evaluateExpression(node.right, assignment);
+        case "or": return evaluateExpression(node.left, assignment) || evaluateExpression(node.right, assignment);
+        case "xor": return evaluateExpression(node.left, assignment) !== evaluateExpression(node.right, assignment);
+        default: throw new Error("Unknown expression node.");
+      }
+    }
+
+    function assignmentForIndex(index, variableCount) {
+      const assignment = {};
+      for (let position = 0; position < variableCount; position += 1) {
+        assignment[VARIABLE_NAMES[position]] = Boolean((index >> (variableCount - position - 1)) & 1);
+      }
+      return assignment;
+    }
+
+    function cubeMatches(bits, index, variableCount) {
+      for (let position = 0; position < variableCount; position += 1) {
+        const expected = bits[position];
+        if (expected !== "-" && Number(expected) !== Number(Boolean((index >> (variableCount - position - 1)) & 1))) return false;
+      }
+      return true;
+    }
+
+    function combineCubes(first, second) {
+      let difference = -1;
+      for (let position = 0; position < first.length; position += 1) {
+        if (first[position] === second[position]) continue;
+        if (first[position] === "-" || second[position] === "-" || difference !== -1) return null;
+        difference = position;
+      }
+      if (difference === -1) return null;
+      return first.slice(0, difference) + "-" + first.slice(difference + 1);
+    }
+
+    function minimizeTarget(targetIndices, dontCareIndices, variableCount) {
+      if (targetIndices.size === 0) return [];
+      let current = new Map();
+      for (const index of new Set([...targetIndices, ...dontCareIndices])) {
+        const bits = index.toString(2).padStart(variableCount, "0");
+        current.set(bits, { bits, covered: new Set([index]) });
+      }
+      const primeBits = new Set();
+      while (current.size > 0) {
+        const cubes = [...current.values()];
+        const combined = new Set();
+        const next = new Map();
+        for (let firstIndex = 0; firstIndex < cubes.length; firstIndex += 1) {
+          for (let secondIndex = firstIndex + 1; secondIndex < cubes.length; secondIndex += 1) {
+            const bits = combineCubes(cubes[firstIndex].bits, cubes[secondIndex].bits);
+            if (!bits) continue;
+            combined.add(cubes[firstIndex].bits);
+            combined.add(cubes[secondIndex].bits);
+            if (!next.has(bits)) next.set(bits, { bits, covered: new Set() });
+            const merged = next.get(bits).covered;
+            for (const index of cubes[firstIndex].covered) merged.add(index);
+            for (const index of cubes[secondIndex].covered) merged.add(index);
+          }
+        }
+        for (const cube of cubes) if (!combined.has(cube.bits)) primeBits.add(cube.bits);
+        current = next;
+      }
+      const primes = [...primeBits]
+        .filter(bits => [...targetIndices].some(index => cubeMatches(bits, index, variableCount)))
+        .map(bits => ({
+          bits,
+          literals: [...bits].filter(bit => bit !== "-").length,
+          covered: [...targetIndices].filter(index => cubeMatches(bits, index, variableCount))
+        }));
+      return minimumCover(primes, targetIndices);
+    }
+
+    function minimumCover(primes, targetIndices) {
+      const selected = new Set();
+      let uncovered = new Set(targetIndices);
+      let changed = true;
+      while (changed) {
+        changed = false;
+        for (const minterm of [...uncovered]) {
+          const candidates = primes.map((prime, index) => prime.covered.includes(minterm) ? index : -1).filter(index => index >= 0);
+          if (candidates.length === 0) throw new Error(`Unable to cover minterm ${minterm}.`);
+          if (candidates.length === 1 && !selected.has(candidates[0])) {
+            const primeIndex = candidates[0];
+            selected.add(primeIndex);
+            uncovered = new Set([...uncovered].filter(index => !primes[primeIndex].covered.includes(index)));
+            changed = true;
+            break;
+          }
+        }
+      }
+      if (uncovered.size === 0) return [...selected].map(index => primes[index]);
+
+      const available = primes.map((prime, index) => ({ ...prime, index })).filter(prime => !selected.has(prime.index));
+      let best = { literals: Infinity, count: Infinity, indices: [] };
+      const memo = new Map();
+      function search(remaining, chosen, literalCount) {
+        const count = chosen.length;
+        if (literalCount > best.literals || (literalCount === best.literals && count >= best.count)) return;
+        if (remaining.size === 0) {
+          best = { literals: literalCount, count, indices: chosen.slice() };
+          return;
+        }
+        const key = [...remaining].sort((a, b) => a - b).join(",");
+        const previous = memo.get(key);
+        if (previous && (previous.literals < literalCount || (previous.literals === literalCount && previous.count <= count))) return;
+        memo.set(key, { literals: literalCount, count });
+        let choices = null;
+        for (const minterm of remaining) {
+          const candidates = available.filter(prime => prime.covered.includes(minterm));
+          if (!choices || candidates.length < choices.length) choices = candidates;
+          if (choices.length === 1) break;
+        }
+        if (!choices || choices.length === 0) throw new Error("No equivalent minimized cover was found.");
+        choices.sort((first, second) => first.literals - second.literals || second.covered.filter(index => remaining.has(index)).length - first.covered.filter(index => remaining.has(index)).length);
+        for (const prime of choices) {
+          const next = new Set([...remaining].filter(index => !prime.covered.includes(index)));
+          search(next, [...chosen, prime.index], literalCount + prime.literals);
+        }
+      }
+      search(uncovered, [], [...selected].reduce((sum, index) => sum + primes[index].literals, 0));
+      return [...selected, ...best.indices].map(index => primes[index]);
+    }
+
+    function formatCubes(cubes, form) {
+      if (form === "sop") {
+        if (cubes.length === 0) return "0";
+        const products = cubes.map(cube => {
+          const literals = [...cube.bits].map((bit, index) => bit === "-" ? "" : VARIABLE_NAMES[index] + (bit === "0" ? "'" : "")).filter(Boolean);
+          return literals.length === 0 ? "1" : literals.join("");
+        });
+        return products.includes("1") ? "1" : products.join(" + ");
+      }
+      if (cubes.length === 0) return "1";
+      const clauses = cubes.map(cube => {
+        const literals = [...cube.bits].map((bit, index) => bit === "-" ? "" : VARIABLE_NAMES[index] + (bit === "1" ? "'" : "")).filter(Boolean);
+        if (literals.length === 0) return "0";
+        return literals.length === 1 ? literals[0] : `(${literals.join(" + ")})`;
+      });
+      return clauses.includes("0") ? "0" : clauses.join(" * ");
+    }
+
+    function formatCube(bits, form) {
+      if (form === "sop") {
+        const literals = [...bits].map((bit, index) => bit === "-" ? "" : VARIABLE_NAMES[index] + (bit === "0" ? "'" : "")).filter(Boolean);
+        return literals.length ? literals.join("") : "1";
+      }
+      const literals = [...bits].map((bit, index) => bit === "-" ? "" : VARIABLE_NAMES[index] + (bit === "1" ? "'" : "")).filter(Boolean);
+      return literals.length === 0 ? "0" : literals.length === 1 ? literals[0] : `(${literals.join(" + ")})`;
+    }
+
+    function deriveAlgebraicSteps(cube, form, variableCount) {
+      let current = [];
+      for (let index = 0; index < 2 ** variableCount; index += 1) {
+        if (cubeMatches(cube.bits, index, variableCount)) current.push(index.toString(2).padStart(variableCount, "0"));
+      }
+      const steps = [];
+      for (let position = 0; position < variableCount; position += 1) {
+        if (cube.bits[position] !== "-") continue;
+        const next = new Map();
+        for (let firstIndex = 0; firstIndex < current.length; firstIndex += 1) {
+          for (let secondIndex = firstIndex + 1; secondIndex < current.length; secondIndex += 1) {
+            const merged = combineCubes(current[firstIndex], current[secondIndex]);
+            if (!merged || merged[position] !== "-") continue;
+            if ([...merged].some((bit, index) => bit !== "-" && bit !== cube.bits[index])) continue;
+            next.set(merged, merged);
+            const left = formatCube(current[firstIndex], form);
+            const right = formatCube(current[secondIndex], form);
+            const result = formatCube(merged, form);
+            steps.push(form === "sop" ? `${left} + ${right} = ${result}` : `(${left}) * (${right}) = ${result}`);
+          }
+        }
+        current = [...next.values()];
+      }
+      return steps;
+    }
+
+    function evaluateCubes(cubes, form, index, variableCount) {
+      if (form === "sop") return cubes.some(cube => cubeMatches(cube.bits, index, variableCount));
+      return cubes.every(cube => !cubeMatches(cube.bits, index, variableCount));
+    }
+
+    function parseDontCares(source, variableCount, onSet) {
+      if (!source.trim()) return new Set();
+      const limit = 2 ** variableCount;
+      const values = source.split(",").map(item => item.trim());
+      if (values.some(value => !/^\d+$/.test(value))) throw new Error("Enter don't-care minterms as comma-separated integers.");
+      const indices = new Set(values.map(Number));
+      for (const index of indices) {
+        if (index >= limit) throw new Error(`Minterm ${index} is outside the 0-${limit - 1} range.`);
+        if (onSet.has(index)) throw new Error(`Minterm ${index} is both an output 1 and a don't-care.`);
+      }
+      return indices;
+    }
+
+    function computeResults(ast, variableCount, dontCareIndices) {
+      const limit = 2 ** variableCount;
+      const onSet = new Set();
+      const offSet = new Set();
+      for (let index = 0; index < limit; index += 1) {
+        if (dontCareIndices.has(index)) continue;
+        (evaluateExpression(ast, assignmentForIndex(index, variableCount)) ? onSet : offSet).add(index);
+      }
+      const sop = minimizeTarget(onSet, dontCareIndices, variableCount);
+      const pos = minimizeTarget(offSet, dontCareIndices, variableCount);
+      return {
+        sop: { terms: sop, expression: formatCubes(sop, "sop"), literals: sop.reduce((sum, cube) => sum + cube.literals, 0), baseline: onSet.size * variableCount },
+        pos: { terms: pos, expression: formatCubes(pos, "pos"), literals: pos.reduce((sum, cube) => sum + cube.literals, 0), baseline: offSet.size * variableCount },
+        onSet,
+        offSet
+      };
+    }
+
+    function grayLabel(value) { return value.toString(2).padStart(2, "0"); }
+
+    const state = { ast: null, variableCount: 4, dontCares: new Set(), results: null, form: "sop", inputs: [false, false, false, false] };
+
+    function setError(message) {
+      const element = document.getElementById("error-message");
+      element.textContent = message;
+      element.hidden = !message;
+    }
+
+    function setForm(form) {
+      state.form = form;
+      document.querySelectorAll("[data-form]").forEach(button => button.setAttribute("aria-pressed", String(button.dataset.form === form)));
+      if (state.results) renderAll();
+    }
+
+    function runSimplifier() {
+      try {
+        const source = document.getElementById("expression").value.trim();
+        const variableCount = Number(document.getElementById("variable-count").value);
+        const ast = new ExpressionParser(source).parse();
+        const unsupported = [...expressionVariables(ast)].filter(name => VARIABLE_NAMES.indexOf(name) >= variableCount);
+        if (unsupported.length) throw new Error(`Expression uses ${unsupported.join(", ")}, but only ${variableCount} variables are selected.`);
+        const onSet = new Set();
+        for (let index = 0; index < 2 ** variableCount; index += 1) {
+          if (evaluateExpression(ast, assignmentForIndex(index, variableCount))) onSet.add(index);
+        }
+        const dontCares = parseDontCares(document.getElementById("dont-cares").value, variableCount, onSet);
+        const results = computeResults(ast, variableCount, dontCares);
+        state.ast = ast;
+        state.variableCount = variableCount;
+        state.dontCares = dontCares;
+        state.results = results;
+        state.inputs = Array(variableCount).fill(false);
+        setError("");
+        renderAll();
+      } catch (error) {
+        setError(error.message || "Could not simplify this expression.");
+      }
+    }
+
+    function renderResults() {
+      const container = document.getElementById("form-results");
+      container.innerHTML = "";
+      for (const form of ["sop", "pos"]) {
+        const result = state.results[form];
+        const output = document.createElement("div");
+        output.className = `form-output ${form}`;
+        const reduction = result.baseline === 0 ? 0 : Math.max(0, Math.round((1 - result.literals / result.baseline) * 100));
+        output.innerHTML = `<div class="form-label"><span>${form === "sop" ? "Sum of products" : "Product of sums"}</span><span>${result.terms.length} ${result.terms.length === 1 ? "term" : "terms"}</span></div><div class="form-expression"></div><div class="form-stats"><span>${result.literals} literals</span><span class="delta"> &middot; ${reduction}% fewer vs canonical</span></div>`;
+        output.querySelector(".form-expression").textContent = result.expression;
+        container.append(output);
+      }
+    }
+
+    function renderMaps() {
+      const maps = document.getElementById("maps-grid");
+      maps.innerHTML = "";
+      document.getElementById("map-form-label").textContent = `${state.form.toUpperCase()} GROUPS`;
+      const selectedTerms = state.results[state.form].terms;
+      const mapCount = 2 ** (state.variableCount - 4);
+      const rowLabels = GRAY_CODES.map(grayLabel);
+      const colLabels = GRAY_CODES.map(grayLabel);
+      for (let mapIndex = 0; mapIndex < mapCount; mapIndex += 1) {
+        const suffixVariables = VARIABLE_NAMES.slice(4, state.variableCount);
+        const suffix = mapIndex.toString(2).padStart(state.variableCount - 4, "0");
+        const title = suffixVariables.length ? `${suffixVariables.map((name, index) => name + "=" + suffix[index]).join(" ")}` : "All assignments";
+        const card = document.createElement("div");
+        card.className = "map-card";
+        const table = document.createElement("table");
+        table.className = "kmap";
+        const head = document.createElement("thead");
+        head.innerHTML = `<tr><th class="axis-label" rowspan="2">${VARIABLE_NAMES.slice(0, 2).join("")}</th><th colspan="4">${VARIABLE_NAMES.slice(2, 4).join("")}</th></tr><tr>${colLabels.map(label => `<th>${label}</th>`).join("")}</tr>`;
+        table.append(head);
+        const body = document.createElement("tbody");
+        rowLabels.forEach((rowLabel, rowIndex) => {
+          const row = document.createElement("tr");
+          const axis = document.createElement("th");
+          axis.textContent = rowLabel;
+          row.append(axis);
+          colLabels.forEach((_, colIndex) => {
+            const index = mapIndex * 16 + GRAY_CODES[rowIndex] * 4 + GRAY_CODES[colIndex];
+            const cell = document.createElement("td");
+            const value = state.dontCares.has(index) ? "X" : state.results.onSet.has(index) ? "1" : "0";
+            cell.className = `map-cell ${value === "X" ? "dc" : value === "1" ? "one" : "zero"}`;
+            const matchingGroups = selectedTerms.map((cube, groupIndex) => cubeMatches(cube.bits, index, state.variableCount) ? groupIndex : -1).filter(groupIndex => groupIndex >= 0);
+            if (matchingGroups.length) {
+              cell.classList.add("grouped");
+              cell.style.setProperty("--group-color", `hsl(${(matchingGroups[0] * 113 + 155) % 360} 43% 42%)`);
+            }
+            cell.textContent = value;
+            cell.title = `Minterm ${index}${matchingGroups.length ? `; covered by ${matchingGroups.length} selected group${matchingGroups.length === 1 ? "" : "s"}` : ""}`;
+            cell.setAttribute("aria-label", cell.title);
+            row.append(cell);
+          });
+          body.append(row);
+        });
+        table.append(body);
+        const titleElement = document.createElement("div");
+        titleElement.className = "map-title";
+        titleElement.innerHTML = `<strong>Map ${mapIndex + 1}</strong><span>${title}</span>`;
+        card.append(titleElement, table);
+        maps.append(card);
+      }
+    }
+
+    function renderAlgebraicSteps() {
+      const container = document.getElementById("algebraic-steps");
+      const identity = document.getElementById("algebraic-identity");
+      const form = state.form;
+      identity.textContent = form === "sop"
+        ? "SOP uses X·L + X·L' = X; the exact cover keeps only the implicants needed to cover the ON-set."
+        : "POS uses (X + L)(X + L') = X; the exact cover keeps only the implicants needed to cover the OFF-set.";
+      container.replaceChildren();
+      const terms = state.results[form].terms;
+      let mergeCount = 0;
+      terms.forEach((cube, index) => {
+        const steps = deriveAlgebraicSteps(cube, form, state.variableCount);
+        mergeCount += steps.length;
+        const group = document.createElement("div");
+        group.className = "algebraic-group";
+        const heading = document.createElement("h4");
+        heading.textContent = `Implicant ${index + 1}: ${formatCube(cube.bits, form)}`;
+        group.append(heading);
+        if (steps.length) {
+          const list = document.createElement("ol");
+          for (const step of steps) {
+            const item = document.createElement("li");
+            item.textContent = step;
+            list.append(item);
+          }
+          group.append(list);
+        } else {
+          const note = document.createElement("div");
+          note.className = "algebraic-empty";
+          note.textContent = "No further adjacent-term merge is required for this implicant.";
+          group.append(note);
+        }
+        container.append(group);
+      });
+      if (state.dontCares.size) {
+        const note = document.createElement("p");
+        note.className = "footnote";
+        note.textContent = "Don't-care rows were assigned the values needed for these groups; equivalence is required only on defined rows.";
+        container.append(note);
+      }
+      if (!terms.length) {
+        const note = document.createElement("p");
+        note.className = "algebraic-empty";
+        note.textContent = `The constant result ${state.results[form].expression} needs no implicant merges.`;
+        container.append(note);
+      }
+      container.dataset.mergeCount = String(mergeCount);
+    }
+
+    function renderSwitches() {
+      const container = document.getElementById("switch-list");
+      container.innerHTML = "";
+      VARIABLE_NAMES.slice(0, state.variableCount).forEach((name, index) => {
+        const row = document.createElement("div");
+        row.className = "switch-row";
+        const label = document.createElement("label");
+        label.textContent = name;
+        label.htmlFor = `input-${name}`;
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "switch";
+        button.id = `input-${name}`;
+        button.setAttribute("role", "switch");
+        button.setAttribute("aria-label", `Input ${name}`);
+        button.setAttribute("aria-checked", String(state.inputs[index]));
+        button.addEventListener("click", () => {
+          state.inputs[index] = !state.inputs[index];
+          renderSimulation();
+        });
+        row.append(label, button);
+        container.append(row);
+      });
+    }
+
+    function makeCircuitSvg() {
+      const terms = state.results[state.form].terms;
+      const form = state.form;
+      const height = Math.max(160, Math.max(state.variableCount, terms.length, 2) * 48 + 28);
+      const inputX = 44;
+      const factorX = 315;
+      const factorWidth = 178;
+      const outputX = 715;
+      const inputY = VARIABLE_NAMES.slice(0, state.variableCount).map((_, index) => (height - (state.variableCount - 1) * 30) / 2 + index * 30);
+      const factorY = terms.map((_, index) => (height - (terms.length - 1) * 48) / 2 + index * 48);
+      const pieces = [`<svg class="circuit-svg" viewBox="0 0 810 ${height}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${form.toUpperCase()} circuit with ${terms.length} factor gates">`];
+      pieces.push(`<text x="${inputX}" y="18" class="pin-label">INPUTS</text><text x="${outputX - 10}" y="18" class="pin-label">OUTPUT</text>`);
+      VARIABLE_NAMES.slice(0, state.variableCount).forEach((name, index) => {
+        pieces.push(`<text x="${inputX - 9}" y="${inputY[index] + 4}" text-anchor="end" class="pin-label">${name}</text><circle cx="${inputX}" cy="${inputY[index]}" r="3" class="input-dot"/><path d="M ${inputX + 3} ${inputY[index]} H ${factorX - 28}" class="wire"/>`);
+      });
+      if (terms.length === 0) {
+        const constant = form === "sop" ? "0" : "1";
+        pieces.push(`<rect x="${factorX}" y="${height / 2 - 20}" width="${factorWidth}" height="40" rx="3" class="gate"/><text x="${factorX + factorWidth / 2}" y="${height / 2 + 4}" text-anchor="middle" class="gate-title">CONSTANT ${constant}</text><path d="M ${factorX + factorWidth} ${height / 2} H ${outputX - 20}" class="wire"/><text x="${outputX}" y="${height / 2 + 4}" class="out-label">F</text>`);
+      } else {
+        terms.forEach((cube, termIndex) => {
+          const y = factorY[termIndex];
+          const literals = [...cube.bits].map((bit, index) => bit === "-" ? "" : VARIABLE_NAMES[index] + (form === "sop" ? (bit === "0" ? "'" : "") : (bit === "1" ? "'" : ""))).filter(Boolean);
+          const gateName = form === "sop" ? "AND" : "OR";
+          const formula = literals.length ? literals.join(form === "sop" ? " &middot; " : " + ") : (form === "sop" ? "1" : "0");
+          for (let variableIndex = 0; variableIndex < state.variableCount; variableIndex += 1) {
+            if (cube.bits[variableIndex] === "-") continue;
+            const sourceY = inputY[variableIndex];
+            pieces.push(`<path d="M ${factorX - 28} ${sourceY} H ${factorX - 12} V ${y} H ${factorX}" class="wire"/>`);
+            if ((form === "sop" && cube.bits[variableIndex] === "0") || (form === "pos" && cube.bits[variableIndex] === "1")) pieces.push(`<circle cx="${factorX - 14}" cy="${y}" r="3" fill="#fff" stroke="#e97150" stroke-width="1.5"/>`);
+          }
+          pieces.push(`<rect x="${factorX}" y="${y - 19}" width="${factorWidth}" height="38" rx="3" class="gate"/><text x="${factorX + 10}" y="${y - 4}" class="gate-title">${gateName}</text><text x="${factorX + 10}" y="${y + 11}" class="gate-expression">${formula}</text>`);
+          const finalY = height / 2;
+          if (terms.length === 1) pieces.push(`<path d="M ${factorX + factorWidth} ${y} H ${outputX - 20}" class="wire"/>`);
+          else pieces.push(`<path d="M ${factorX + factorWidth} ${y} H ${outputX - 65} V ${finalY}" class="wire"/>`);
+        });
+        if (terms.length > 1) {
+          const finalGate = form === "sop" ? "OR" : "AND";
+          pieces.push(`<path d="M ${outputX - 65} ${height / 2} H ${outputX - 20}" class="wire"/><rect x="${outputX - 20}" y="${height / 2 - 22}" width="70" height="44" rx="18" class="final-gate"/><text x="${outputX + 15}" y="${height / 2 + 4}" text-anchor="middle" class="gate-title">${finalGate}</text><path d="M ${outputX + 50} ${height / 2} H ${outputX + 70}" class="wire"/>`);
+        }
+        pieces.push(`<text x="${outputX + 73}" y="${height / 2 + 4}" class="out-label">F</text>`);
+      }
+      pieces.push("</svg>");
+      return pieces.join("");
+    }
+
+    function renderSimulation() {
+      const assignment = Object.fromEntries(VARIABLE_NAMES.slice(0, state.variableCount).map((name, index) => [name, state.inputs[index]]));
+      const index = state.inputs.reduce((value, bit) => (value << 1) | Number(bit), 0);
+      const output = evaluateCubes(state.results[state.form].terms, state.form, index, state.variableCount);
+      const expected = evaluateExpression(state.ast, assignment);
+      document.getElementById("sim-output").textContent = Number(output).toString();
+      document.getElementById("sim-status").textContent = output === expected ? `Input index ${index}: circuit matches the original function.` : `Input index ${index}: output mismatch detected.`;
+      document.getElementById("sim-status").className = `footnote ${output === expected ? "match" : "different"}`;
+      document.querySelectorAll(".switch").forEach((button, indexValue) => button.setAttribute("aria-checked", String(state.inputs[indexValue])));
+      document.getElementById("circuit-wrap").innerHTML = makeCircuitSvg();
+    }
+
+    function renderTruthTable() {
+      const wrap = document.getElementById("truth-table-wrap");
+      const variableNames = VARIABLE_NAMES.slice(0, state.variableCount);
+      const headers = [...variableNames, "Original", "Circuit"];
+      const table = document.createElement("table");
+      table.className = "truth-table";
+      table.innerHTML = `<thead><tr>${headers.map(header => `<th>${header}</th>`).join("")}</tr></thead>`;
+      const body = document.createElement("tbody");
+      for (let index = 0; index < 2 ** state.variableCount; index += 1) {
+        const assignment = assignmentForIndex(index, state.variableCount);
+        const original = evaluateExpression(state.ast, assignment);
+        const simplified = state.dontCares.has(index) ? original : evaluateCubes(state.results[state.form].terms, state.form, index, state.variableCount);
+        const row = document.createElement("tr");
+        const values = [...variableNames.map(name => Number(assignment[name])), state.dontCares.has(index) ? "X" : Number(original), state.dontCares.has(index) ? "X" : Number(simplified)];
+        row.innerHTML = values.map(value => `<td>${value}</td>`).join("");
+        const outputCells = row.querySelectorAll("td");
+        outputCells[outputCells.length - 2].className = "match";
+        outputCells[outputCells.length - 1].className = original === simplified ? "match" : "different";
+        body.append(row);
+      }
+      table.append(body);
+      wrap.replaceChildren(table);
+      document.getElementById("table-count").textContent = `${2 ** state.variableCount} ROWS`;
+    }
+
+    function renderAll() {
+      renderResults();
+      renderAlgebraicSteps();
+      renderMaps();
+      renderSwitches();
+      renderSimulation();
+      renderTruthTable();
+    }
+
+    function parseAiPayload(content) {
+      const cleaned = content.trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "");
+      return JSON.parse(cleaned);
+    }
+
+    async function requestAiReview() {
+      const result = document.getElementById("ai-result");
+      result.hidden = false;
+      result.textContent = "Preparing review...";
+      const apiKey = document.getElementById("ai-key").value.trim();
+      const endpoint = document.getElementById("ai-endpoint").value.trim();
+      const model = document.getElementById("ai-model").value.trim();
+      if (!apiKey || !endpoint || !model) {
+        result.textContent = "Enter an endpoint, model, and API key in GenAI review settings first.";
+        return;
+      }
+      try {
+        const url = new URL(endpoint);
+        if (!/^https?:$/.test(url.protocol)) throw new Error("Use an HTTP or HTTPS chat-completions endpoint.");
+        const minterms = [...state.results.onSet].sort((a, b) => a - b);
+        const dontCares = [...state.dontCares].sort((a, b) => a - b);
+        const prompt = `You are reviewing a Boolean minimization for ${state.variableCount} variables A through ${VARIABLE_NAMES[state.variableCount - 1]}. The ON-set minterms are ${JSON.stringify(minterms)} and don't-care minterms are ${JSON.stringify(dontCares)}. The exact local minimizer gives SOP ${JSON.stringify(state.results.sop.expression)} and POS ${JSON.stringify(state.results.pos.expression)}. Return only a JSON object with string fields sop, pos, and explanation. Give equivalent candidate expressions using A-F, apostrophe for NOT, adjacency or * for AND, and + for OR. Explain the main grouping or algebraic idea briefly. Do not claim minimality.`;
+        const response = await fetch(url.href, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Authorization": `Bearer ${apiKey}` },
+          body: JSON.stringify({ model, temperature: 0.1, messages: [{ role: "user", content: prompt }] })
+        });
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error && payload.error.message ? payload.error.message : `The endpoint returned HTTP ${response.status}.`);
+        const content = payload.choices && payload.choices[0] && payload.choices[0].message && payload.choices[0].message.content;
+        if (typeof content !== "string") throw new Error("The endpoint response did not contain a chat message.");
+        const suggestion = parseAiPayload(content);
+        const checks = {};
+        for (const form of ["sop", "pos"]) {
+          const candidate = new ExpressionParser(String(suggestion[form] || "")).parse();
+          const unsupported = [...expressionVariables(candidate)].filter(name => VARIABLE_NAMES.indexOf(name) >= state.variableCount);
+          if (unsupported.length) throw new Error(`AI ${form.toUpperCase()} candidate uses an unavailable variable.`);
+          checks[form] = true;
+          for (let index = 0; index < 2 ** state.variableCount; index += 1) {
+            if (state.dontCares.has(index)) continue;
+            if (evaluateExpression(candidate, assignmentForIndex(index, state.variableCount)) !== evaluateExpression(state.ast, assignmentForIndex(index, state.variableCount))) checks[form] = false;
+          }
+        }
+        result.replaceChildren();
+        const heading = document.createElement("h4");
+        heading.textContent = "GenAI proposals; equivalence checked locally";
+        result.append(heading);
+        for (const form of ["sop", "pos"]) {
+          const line = document.createElement("p");
+          line.className = "ai-proposal";
+          line.textContent = `${form.toUpperCase()}: ${suggestion[form]}  |  ${checks[form] ? "equivalent on every defined row" : "NOT equivalent"}`;
+          result.append(line);
+        }
+        const explanation = document.createElement("p");
+        explanation.textContent = String(suggestion.explanation || "No explanation provided.");
+        result.append(explanation);
+        const caveat = document.createElement("p");
+        caveat.textContent = "The simulator checks equivalence, not whether an AI proposal is minimal. Local minimized forms remain the reference.";
+        result.append(caveat);
+      } catch (error) {
+        result.textContent = `AI review unavailable: ${error.message || "request failed"}`;
+      }
+    }
+
+    function initializeApp() {
+      document.getElementById("simplify").addEventListener("click", runSimplifier);
+      document.getElementById("expression").addEventListener("keydown", event => {
+        if ((event.ctrlKey || event.metaKey) && event.key === "Enter") runSimplifier();
+      });
+      document.querySelectorAll("[data-form]").forEach(button => button.addEventListener("click", () => setForm(button.dataset.form)));
+      document.getElementById("ai-review").addEventListener("click", requestAiReview);
+      runSimplifier();
+    }
+
+    globalThis.BooleanLabCore = { ExpressionParser, expressionVariables, evaluateExpression, assignmentForIndex, cubeMatches, minimizeTarget, formatCubes, formatCube, deriveAlgebraicSteps, evaluateCubes, computeResults };
+    if (typeof document !== "undefined") initializeApp();
+  </script>
+</body>
+</html>
